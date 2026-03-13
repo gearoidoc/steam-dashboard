@@ -55,23 +55,6 @@
       console.log(`Searching for App ID: `, appId);
     });
 
-    async function fetchGameData(appId) {
-      try {
-      const response = await fetch('http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=440&key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&steamid=76561197972495328' + appId);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('Fetched game data: ', data);
-    } catch (error) {
-      console.error('Error fetching game data: ', error);
-      document.getElementById('error-msg').textContent = 'Failed to fetch game data. Please try again later.';
-      document.getElementById('error-msg').style.display = 'block';
-    }
-  }
-
   const PROXY = 'https://steam-proxy-server.itsgearofroad.workers.dev/?url='
 
 async function fetchAppDetails(appId) {
@@ -104,7 +87,10 @@ async function handleSearch() {
     document.getElementById('error-msg').textContent = err.message
     document.getElementById('error-msg').style.display = 'block'
   }
-}
+
+      const data = await response.json();
+      console.log('Fetched game data: ', data);
+    } 
 
 document.getElementById('search-btn').addEventListener('click', handleSearch)
   </script>
