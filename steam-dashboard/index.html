@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Steam Dashboard</title>
+
+  
 </head>
 <body>
   <header>
@@ -21,8 +23,8 @@
         <p id="current-players">-</p>
       </div>
       <div class="stat-card">
-        <p>Peak Players (24h)</p>
-        <p id="peak-players">-</p>
+        <p>Price</p>
+        <p id="price">-</p>
       </div>
       <div class="stat-card">
         <h2>Peak Players (All Time)</h2>
@@ -52,5 +54,59 @@
 
       console.log(`Searching for App ID: `, appId);
     });
+
+    async function fetchGameData(appId) {
+      try {
+      const response = await fetch('http://api.steampowered.com/ISteamUserStats/GetUserStatsForGame/v0002/?appid=440&key=XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX&steamid=76561197972495328' + appId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Fetched game data: ', data);
+    } catch (error) {
+      console.error('Error fetching game data: ', error);
+      document.getElementById('error-msg').textContent = 'Failed to fetch game data. Please try again later.';
+      document.getElementById('error-msg').style.display = 'block';
+    }
+  }
+
+  const PROXY = 'https://steam-proxy-server.itsgearofroad.workers.dev/?url='
+
+async function fetchAppDetails(appId) {
+  const steamUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
+  const res = await fetch(PROXY + encodeURIComponent(steamUrl))
+  const json = await res.json()
+  
+  if (!json[appId]?.success) {
+    throw new Error('Game not found or API unavailable')
+  }
+  
+  return json[appId].data
+}
+async function handleSearch() {
+  const appId = document.getElementById('app-id-input').value.trim()
+  if (!appId) return
+
+  try {
+    const game = await fetchAppDetails(appId)
+    
+    document.getElementById('game-title').textContent = game.name
+    document.getElementById('game-description').textContent = game.short_description
+    document.getElementById('price').textContent = 
+      game.is_free ? 'Free' : (game.price_overview?.final_formatted ?? 'N/A')
+    document.getElementById('review-score').textContent = game.review_score_desc
+    
+    // Show the results section
+    document.getElementById('results').style.display = 'block'
+  } catch (err) {
+    document.getElementById('error-msg').textContent = err.message
+    document.getElementById('error-msg').style.display = 'block'
+  }
+}
+
+document.getElementById('search-btn').addEventListener('click', handleSearch)
   </script>
+
 </body>
