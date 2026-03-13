@@ -3,8 +3,145 @@
 <head>
   <meta charset="UTF-8">
   <title>Steam Dashboard</title>
+  <style>
+    * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-  
+body {
+  font-family: system-ui, sans-serif;
+  background: #0e0e10;
+  color: #e0e0e0;
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.search-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 2rem;
+}
+
+.search-bar input {
+  flex: 1;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid #333;
+  background: #1a1a1e;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.search-bar button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  border: none;
+  background: #1b9af5;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.search-bar button:hover {
+  background: #1484d4;
+}
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: #1a1a1e;
+  border: 1px solid #2a2a2e;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.stat-card .label {
+  font-size: 0.75rem;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.stat-card .value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.game-info {
+  background: #1a1a1e;
+  border: 1px solid #2a2a2e;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.game-info h2 {
+  font-size: 1.25rem;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.game-info p {
+  color: #aaa;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.news-feed h3 {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #888;
+  margin-bottom: 1rem;
+}
+
+.news-feed article {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #2a2a2e;
+}
+
+.news-feed article a {
+  color: #e0e0e0;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.news-feed article a:hover { color: #1b9af5; }
+
+.news-feed article p {
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 3px;
+}
+
+.genre-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  background: #2a2a2e;
+  color: #aaa;
+  font-size: 0.75rem;
+  margin-right: 6px;
+  margin-bottom: 6px;
+}
+  </style>
 </head>
 <body>
   <header>
@@ -27,72 +164,117 @@
         <p id="price">-</p>
       </div>
       <div class="stat-card">
-        <h2>Peak Players (All Time)</h2>
-        <p id="all-time-peak">-</p>
+        <p>Review Score</p>
+        <p id="review-score">-</p>
       </div>
     </section>
 
     <section class="game-info">
+      <img id="game-header-image" src="" alt="Game Header Image" style="width: 100%; border-radius: 6px; margin-bottom: 1rem; display: none;" />
       <h2 id="game-title">Game Title</h2>
       <p id="game-description">Game description will appear here.</p>
       <div id="genres"></div>
     </section>
+
+    <section class="news-feed">
+      <h3>Latest News</h3>
+      <div id="news-list"></div>
+    </section> 
   </main>
     <p id="error-msg" style="display: none; color: red;"></p>
 
   <script>
-    const searchButton = document.getElementById('search-button');
-    let currentAppId = '';
-    searchButton.addEventListener('click', () => {
-      const input = document.getElementById('app-id-input');
-      const appId = input.value.trim();
-      
-      if(!appId) {
-        alert('Please enter a valid App ID.');
-        return;
-      }
-
-      console.log(`Searching for App ID: `, appId);
-    });
-
   const PROXY = 'https://steam-proxy-server.itsgearofroad.workers.dev/?url='
 
-async function fetchAppDetails(appId) {
-  const steamUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
+  async function fetchAppDetails(appId) {
+    const steamUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
+    const res = await fetch(PROXY + encodeURIComponent(steamUrl))
+    const json = await res.json()
+
+    if (!json[appId]?.success) {
+      throw new Error('Game not found or API unavailable')
+    }
+
+    return json[appId].data
+  }
+
+  async function fetchPlayerCount(appId) {
+  const steamUrl = `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}`
   const res = await fetch(PROXY + encodeURIComponent(steamUrl))
   const json = await res.json()
-  
-  if (!json[appId]?.success) {
-    throw new Error('Game not found or API unavailable')
-  }
-  
-  return json[appId].data
+  return json.response.player_count
 }
+
+async function fetchNews(appId) {
+  const steamUrl = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=${appId}&count=5&maxlength=200`
+  const res = await fetch(PROXY + encodeURIComponent(steamUrl))
+  const json = await res.json()
+  return json.appnews.newsitems
+}
+
+function renderNews(newsItems) {
+  const container = document.getElementById('news-list')
+  container.innerHTML = ''  // Clear previous results
+  
+  newsItems.forEach(item => {
+    const date = new Date(item.date * 1000).toLocaleDateString('en-GB', {
+      day: 'numeric', month: 'short', year: 'numeric'
+    })
+    
+    const article = document.createElement('article')
+    article.innerHTML = `
+      <a href="${item.url}" target="_blank">${item.title}</a>
+      <p>${item.author} · ${date}</p>
+    `
+    container.appendChild(article)
+  })
+}
+
+function renderGenres(genres) {
+  const container = document.getElementById('genres')
+  container.innerHTML = ''
+  
+  if (!genres) return
+  
+  genres.forEach(genre => {
+    const badge = document.createElement('span')
+    badge.textContent = genre.description
+    badge.className = 'genre-badge'
+    container.appendChild(badge)
+  })
+}
+
 async function handleSearch() {
   const appId = document.getElementById('app-id-input').value.trim()
   if (!appId) return
 
   try {
-    const game = await fetchAppDetails(appId)
-    
+    const [game, playerCount, news] = await Promise.all([
+      fetchAppDetails(appId),
+      fetchPlayerCount(appId),
+      fetchNews(appId)
+    ])
     document.getElementById('game-title').textContent = game.name
     document.getElementById('game-description').textContent = game.short_description
+    document.getElementById('current-players').textContent = 
+      playerCount.toLocaleString()
     document.getElementById('price').textContent = 
       game.is_free ? 'Free' : (game.price_overview?.final_formatted ?? 'N/A')
     document.getElementById('review-score').textContent = game.review_score_desc
-    
-    // Show the results section
     document.getElementById('results').style.display = 'block'
+    renderNews(news)
+    renderGenres(game.genres)
+    const banner = document.getElementById('game-header-image')
+    banner.src = game.header_image
+    banner.alt = game.name
+    banner.style.display = 'block'
   } catch (err) {
     document.getElementById('error-msg').textContent = err.message
     document.getElementById('error-msg').style.display = 'block'
   }
+}
 
-      const data = await response.json();
-      console.log('Fetched game data: ', data);
-    } 
-
-document.getElementById('search-btn').addEventListener('click', handleSearch)
+  document.getElementById('search-button').addEventListener('click', handleSearch)
   </script>
 
 </body>
