@@ -260,7 +260,8 @@ async function handleSearch() {
       playerCount.toLocaleString()
     document.getElementById('price').textContent = 
       game.is_free ? 'Free' : (game.price_overview?.final_formatted ?? 'N/A')
-    document.getElementById('review-score').textContent = game.review_score_desc
+    document.getElementById('review-score').textContent =
+      game.recommendations?.total?.toLocaleString() + ' recommendations' ?? 'N/A'
     document.getElementById('results').style.display = 'block'
     renderNews(news)
     renderGenres(game.genres)
