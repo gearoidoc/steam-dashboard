@@ -5,6 +5,52 @@
   <title>Steam Dashboard</title>
 </head>
 <body>
-  <h1>Hello, Steam!</h1>
+  <header>
+    <h1>Steam Dashboard</h1>
+    <div class="search-bar">
+      <input type="text" id="app-id-input" placeholder="Enter App ID (e.g 730)" />
+      <button id="search-button">Search</button>
+    </div>
+  </header>
+
+  <main id="results" style="display: none;">
+
+    <section class="stats-row">
+      <div class="stat-card">
+        <p>Current Players</p>
+        <p id="current-players">-</p>
+      </div>
+      <div class="stat-card">
+        <p>Peak Players (24h)</p>
+        <p id="peak-players">-</p>
+      </div>
+      <div class="stat-card">
+        <h2>Peak Players (All Time)</h2>
+        <p id="all-time-peak">-</p>
+      </div>
+    </section>
+
+    <section class="game-info">
+      <h2 id="game-title">Game Title</h2>
+      <p id="game-description">Game description will appear here.</p>
+      <div id="genres"></div>
+    </section>
+  </main>
+    <p id="error-msg" style="display: none; color: red;"></p>
+
+  <script>
+    const searchButton = document.getElementById('search-button');
+    let currentAppId = '';
+    searchButton.addEventListener('click', () => {
+      const input = document.getElementById('app-id-input');
+      const appId = input.value.trim();
+      
+      if(!appId) {
+        alert('Please enter a valid App ID.');
+        return;
+      }
+
+      console.log(`Searching for App ID: `, appId);
+    });
+  </script>
 </body>
-</html>
