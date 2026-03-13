@@ -261,7 +261,9 @@ async function handleSearch() {
     document.getElementById('price').textContent = 
       game.is_free ? 'Free' : (game.price_overview?.final_formatted ?? 'N/A')
     document.getElementById('review-score').textContent =
-      game.recommendations?.total?.toLocaleString() + ' recommendations' ?? 'N/A'
+      game.recommendations?.total != null
+      ? game.recommendations.total.toLocaleString() + ' recommendations'
+      : 'N/A'
     document.getElementById('results').style.display = 'block'
     renderNews(news)
     renderGenres(game.genres)
