@@ -30,6 +30,60 @@
       margin-bottom: 2rem;
     }
 
+    .input-wrapper {
+  position: relative;
+  flex: 1;
+}
+
+    .input-wrapper input {
+      width: 100%;
+    }
+
+    #suggestions-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #1a1a1e;
+      border: 1px solid #333;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      list-style: none;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+    }
+
+    #suggestions-list li {
+      padding: 10px 14px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #suggestions-list li:hover,
+    #suggestions-list li.active {
+      background: #2a2a2e;
+    }
+
+    #suggestions-list li span.app-id {
+      color: #555;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+    }
+
+    #suggestions-list li.loading-item,
+    #suggestions-list li.status-item {
+      color: #666;
+      font-style: italic;
+      cursor: default;
+      justify-content: center;
+    }
+
     .search-bar input {
       flex: 1;
       padding: 10px 14px;
@@ -232,9 +286,12 @@
   <header>
     <h1>Steam Dashboard</h1>
     <div class="search-bar">
-      <input type="text" id="app-id-input" placeholder="Enter App ID (e.g. 730 for CS2)" />
-      <button id="search-button">Search</button>
-    </div>
+    <div class="input-wrapper">
+      <input type="text" id="app-id-input" placeholder="Search by name or App ID..." autocomplete="off" />
+      <ul id="suggestions-list"></ul>
+  </div>
+  <button id="search-button">Search</button>
+</div>
   </header>
 
   <main id="results" style="display: none;">
@@ -302,6 +359,45 @@
     let activePeriod = '24h';
     let chartInstance = null;
     let yearData = null; // cached Steam Charts data
+    let selectedAppId = null;
+
+    // ── Search suggestions logic
+  async function getSuggestions(query) {
+    const url = `https://store.steampowered.com/api/storesearch/?term=${encodeURIComponent(query)}&l=english&cc=US`;
+    const res = await fetch(PROXY + encodeURIComponent(url));
+    const json = await res.json();
+    return json.items || [];
+  }
+
+    // Render Function for Suggestions Dropdown
+    function renderSuggestions(results) {
+      const list = document.getElementById('suggestions-list');
+
+      if (results.length === 0) {
+        list.style.display = 'none';
+        return;
+      }
+
+      list.innerHTML = '';
+
+      results.forEach(app => {
+        const li = document.createElement('li');
+        li.innerHTML = `
+          <span class="app-name">${app.name}</span>
+          <span class="app-id">${app.id}</span>
+        `;
+        li.addEventListener('mousedown', () => {
+          // mousedown fires before blur, so the click registers before the dropdown hides
+          selectedAppId = app.id;
+          document.getElementById('app-id-input').value = app.name;
+          list.style.display = 'none';
+          handleSearch();
+        });
+        list.appendChild(li);
+      });
+
+      list.style.display = 'block';
+    }
 
     // ── Fetch helpers
     async function fetchAppDetails(appId) {
@@ -312,6 +408,7 @@
       return json[appId].data;
     }
 
+    // Note: this endpoint returns only current player count, no historical data
     async function fetchPlayerCount(appId) {
       const url = `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}`;
       const res = await fetch(PROXY + encodeURIComponent(url));
@@ -319,6 +416,7 @@
       return json.response.player_count;
     }
 
+    // Fetch latest news for the app (returns array of {title, url, author, date})
     async function fetchNews(appId) {
       const url = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=${appId}&count=5&maxlength=200`;
       const res = await fetch(PROXY + encodeURIComponent(url));
@@ -550,7 +648,8 @@
 
     // ── Main search
     async function handleSearch() {
-      const appId = document.getElementById('app-id-input').value.trim();
+      const inputVal = document.getElementById('app-id-input').value.trim();
+      const appId = selectedAppId ? String(selectedAppId) : inputVal;
       if (!appId) return;
 
       const errEl = document.getElementById('error-msg');
@@ -603,6 +702,35 @@
     document.getElementById('search-button').addEventListener('click', handleSearch);
     document.getElementById('app-id-input').addEventListener('keydown', e => {
       if (e.key === 'Enter') handleSearch();
+    });
+    const input = document.getElementById('app-id-input');
+
+    // Debounce helper — waits 150ms after the user stops typing before filtering
+    let debounceTimer;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      selectedAppId = null; // clear any previous selection if user is typing again
+
+      const query = input.value.trim();
+
+      // If it looks like a plain number, don't show suggestions
+      if (/^\d+$/.test(query)) {
+        document.getElementById('suggestions-list').style.display = 'none';
+        return;
+      }
+
+      debounceTimer = setTimeout(async () => {
+        const results = await getSuggestions(query);
+        renderSuggestions(results);
+      }, 300);
+    });
+
+    // Hide dropdown when input loses focus
+    input.addEventListener('blur', () => {
+      setTimeout(() => {
+        document.getElementById('suggestions-list').style.display = 'none';
+      }, 150);
+      // Small delay so mousedown on a suggestion fires first
     });
   </script>
 
