@@ -2,152 +2,237 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Steam Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
   <style>
-    * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
-body {
-  font-family: system-ui, sans-serif;
-  background: #0e0e10;
-  color: #e0e0e0;
-  padding: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-}
+    body {
+      font-family: system-ui, sans-serif;
+      background: #0e0e10;
+      color: #e0e0e0;
+      padding: 2rem;
+      max-width: 900px;
+      margin: 0 auto;
+    }
 
-h1 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 1.5rem;
-}
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 1.5rem;
+    }
 
-.search-bar {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 2rem;
-}
+    .search-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 2rem;
+    }
 
-.search-bar input {
-  flex: 1;
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid #333;
-  background: #1a1a1e;
-  color: #fff;
-  font-size: 1rem;
-}
+    .search-bar input {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 6px;
+      border: 1px solid #333;
+      background: #1a1a1e;
+      color: #fff;
+      font-size: 1rem;
+    }
 
-.search-bar button {
-  padding: 10px 20px;
-  border-radius: 6px;
-  border: none;
-  background: #1b9af5;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
-}
+    .search-bar button {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      background: #1b9af5;
+      color: #fff;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
 
-.search-bar button:hover {
-  background: #1484d4;
-}
+    .search-bar button:hover { background: #1484d4; }
 
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 1.5rem;
-}
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 1.5rem;
+    }
 
-.stat-card {
-  background: #1a1a1e;
-  border: 1px solid #2a2a2e;
-  border-radius: 8px;
-  padding: 1rem;
-}
+    .stat-card {
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      padding: 1rem;
+    }
 
-.stat-card .label {
-  font-size: 0.75rem;
-  color: #888;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 4px;
-}
+    .stat-card .label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 4px;
+    }
 
-.stat-card .value {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #fff;
-}
+    .stat-card .value {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #fff;
+    }
 
-.game-info {
-  background: #1a1a1e;
-  border: 1px solid #2a2a2e;
-  border-radius: 8px;
-  padding: 1.25rem;
-  margin-bottom: 1.5rem;
-}
+    .game-info {
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
 
-.game-info h2 {
-  font-size: 1.25rem;
-  color: #fff;
-  margin-bottom: 0.5rem;
-}
+    .game-info h2 {
+      font-size: 1.25rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
 
-.game-info p {
-  color: #aaa;
-  line-height: 1.6;
-  margin-bottom: 1rem;
-}
+    .game-info p {
+      color: #aaa;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
 
-.news-feed h3 {
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #888;
-  margin-bottom: 1rem;
-}
+    /* ── Player Count Graph ── */
+    .graph-card {
+      background: #1a1a1e;
+      border: 1px solid #2a2a2e;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1.5rem;
+    }
 
-.news-feed article {
-  padding: 0.75rem 0;
-  border-bottom: 1px solid #2a2a2e;
-}
+    .graph-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
 
-.news-feed article a {
-  color: #e0e0e0;
-  text-decoration: none;
-  font-weight: 500;
-}
+    .graph-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #888;
+    }
 
-.news-feed article a:hover { color: #1b9af5; }
+    .period-tabs {
+      display: flex;
+      gap: 4px;
+    }
 
-.news-feed article p {
-  font-size: 0.8rem;
-  color: #666;
-  margin-top: 3px;
-}
+    .period-tab {
+      padding: 5px 14px;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: transparent;
+      color: #888;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.18s;
+    }
 
-.genre-badge {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 4px;
-  background: #2a2a2e;
-  color: #aaa;
-  font-size: 0.75rem;
-  margin-right: 6px;
-  margin-bottom: 6px;
-}
+    .period-tab:hover { border-color: #1b9af5; color: #1b9af5; }
+
+    .period-tab.active {
+      background: #1b9af5;
+      border-color: #1b9af5;
+      color: #fff;
+    }
+
+    .graph-container {
+      position: relative;
+      height: 220px;
+    }
+
+    .graph-note {
+      font-size: 0.72rem;
+      color: #555;
+      margin-top: 0.75rem;
+      font-style: italic;
+    }
+
+    .graph-loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 220px;
+      color: #555;
+      font-size: 0.85rem;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .spinner {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #333;
+      border-top-color: #1b9af5;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── News ── */
+    .news-feed h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #888;
+      margin-bottom: 1rem;
+    }
+
+    .news-feed article {
+      padding: 0.75rem 0;
+      border-bottom: 1px solid #2a2a2e;
+    }
+
+    .news-feed article a {
+      color: #e0e0e0;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .news-feed article a:hover { color: #1b9af5; }
+
+    .news-feed article p {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 3px;
+    }
+
+    .genre-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 4px;
+      background: #2a2a2e;
+      color: #aaa;
+      font-size: 0.75rem;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    #error-msg { color: #ff6b6b; margin-top: 0.5rem; font-size: 0.9rem; }
   </style>
 </head>
 <body>
+
   <header>
     <h1>Steam Dashboard</h1>
     <div class="search-bar">
-      <input type="text" id="app-id-input" placeholder="Enter App ID (e.g 730)" />
+      <input type="text" id="app-id-input" placeholder="Enter App ID (e.g. 730 for CS2)" />
       <button id="search-button">Search</button>
     </div>
   </header>
@@ -156,21 +241,44 @@ h1 {
 
     <section class="stats-row">
       <div class="stat-card">
-        <p>Current Players</p>
-        <p id="current-players">-</p>
+        <p class="label">Current Players</p>
+        <p class="value" id="current-players">—</p>
       </div>
       <div class="stat-card">
-        <p>Price</p>
-        <p id="price">-</p>
+        <p class="label">Price</p>
+        <p class="value" id="price">—</p>
       </div>
       <div class="stat-card">
-        <p>Review Score</p>
-        <p id="review-score">-</p>
+        <p class="label">Review Score</p>
+        <p class="value" id="review-score">—</p>
       </div>
     </section>
 
+    <!-- Player Count Graph -->
+    <section class="graph-card">
+      <div class="graph-header">
+        <span class="graph-title">Player Count History</span>
+        <div class="period-tabs">
+          <button class="period-tab active" data-period="24h">24H</button>
+          <button class="period-tab" data-period="7d">7D</button>
+          <button class="period-tab" data-period="1y">1Y</button>
+        </div>
+      </div>
+
+      <div id="graph-loading" class="graph-loading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Loading player data…</span>
+      </div>
+
+      <div class="graph-container" id="graph-container">
+        <canvas id="playerChart"></canvas>
+      </div>
+
+      <p class="graph-note" id="graph-note"></p>
+    </section>
+
     <section class="game-info">
-      <img id="game-header-image" src="" alt="Game Header Image" style="width: 100%; border-radius: 6px; margin-bottom: 1rem; display: none;" />
+      <img id="game-header-image" src="" alt="" style="width:100%; border-radius:6px; margin-bottom:1rem; display:none;" />
       <h2 id="game-title">Game Title</h2>
       <p id="game-description">Game description will appear here.</p>
       <div id="genres"></div>
@@ -179,105 +287,324 @@ h1 {
     <section class="news-feed">
       <h3>Latest News</h3>
       <div id="news-list"></div>
-    </section> 
+    </section>
+
   </main>
-    <p id="error-msg" style="display: none; color: red;"></p>
+
+  <p id="error-msg" style="display:none;"></p>
 
   <script>
-  const PROXY = 'https://steam-proxy-server.itsgearofroad.workers.dev/?url='
+    const PROXY = 'https://steam-proxy-server.itsgearofroad.workers.dev/?url=';
 
-  async function fetchAppDetails(appId) {
-    const steamUrl = `https://store.steampowered.com/api/appdetails?appids=${appId}`
-    const res = await fetch(PROXY + encodeURIComponent(steamUrl))
-    const json = await res.json()
+    // ── State
+    let currentAppId = null;
+    let currentPlayerCount = 0;
+    let activePeriod = '24h';
+    let chartInstance = null;
+    let yearData = null; // cached Steam Charts data
 
-    if (!json[appId]?.success) {
-      throw new Error('Game not found or API unavailable')
+    // ── Fetch helpers
+    async function fetchAppDetails(appId) {
+      const url = `https://store.steampowered.com/api/appdetails?appids=${appId}`;
+      const res = await fetch(PROXY + encodeURIComponent(url));
+      const json = await res.json();
+      if (!json[appId]?.success) throw new Error('Game not found or API unavailable');
+      return json[appId].data;
     }
 
-    return json[appId].data
-  }
+    async function fetchPlayerCount(appId) {
+      const url = `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}`;
+      const res = await fetch(PROXY + encodeURIComponent(url));
+      const json = await res.json();
+      return json.response.player_count;
+    }
 
-  async function fetchPlayerCount(appId) {
-  const steamUrl = `https://api.steampowered.com/ISteamUserStats/GetNumberOfCurrentPlayers/v1/?appid=${appId}`
-  const res = await fetch(PROXY + encodeURIComponent(steamUrl))
-  const json = await res.json()
-  return json.response.player_count
-}
+    async function fetchNews(appId) {
+      const url = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=${appId}&count=5&maxlength=200`;
+      const res = await fetch(PROXY + encodeURIComponent(url));
+      const json = await res.json();
+      return json.appnews.newsitems;
+    }
 
-async function fetchNews(appId) {
-  const steamUrl = `https://api.steampowered.com/ISteamNews/GetNewsForApp/v2/?appid=${appId}&count=5&maxlength=200`
-  const res = await fetch(PROXY + encodeURIComponent(steamUrl))
-  const json = await res.json()
-  return json.appnews.newsitems
-}
+    // Steam Charts monthly data  [ [timestamp_ms, avg_players], ... ]
+    async function fetchSteamChartsHistory(appId) {
+      const url = `https://steamcharts.com/app/${appId}/chart-data.json`;
+      const res = await fetch(PROXY + encodeURIComponent(url));
+      if (!res.ok) throw new Error('Steam Charts unavailable');
+      const data = await res.json();
+      return data; // array of [ts, avg]
+    }
 
-function renderNews(newsItems) {
-  const container = document.getElementById('news-list')
-  container.innerHTML = ''  // Clear previous results
-  
-  newsItems.forEach(item => {
-    const date = new Date(item.date * 1000).toLocaleDateString('en-GB', {
-      day: 'numeric', month: 'short', year: 'numeric'
-    })
-    
-    const article = document.createElement('article')
-    article.innerHTML = `
-      <a href="${item.url}" target="_blank">${item.title}</a>
-      <p>${item.author} · ${date}</p>
-    `
-    container.appendChild(article)
-  })
-}
+    // ── Synthetic data generators
+    // Typical gaming usage curve: late-night trough ~4am, peak ~9pm
+    function syntheticHourlyPattern(basePlayers) {
+      // Relative multipliers for hours 0-23 (index = hour UTC, approximate global average)
+      const curve = [
+        0.45, 0.38, 0.32, 0.28, 0.26, 0.28,   // 0-5: late night / early morning
+        0.32, 0.38, 0.44, 0.50, 0.56, 0.62,   // 6-11: morning ramp
+        0.68, 0.70, 0.72, 0.74, 0.80, 0.88,   // 12-17: afternoon
+        0.94, 1.00, 0.98, 0.92, 0.78, 0.60    // 18-23: prime time & wind-down
+      ];
 
-function renderGenres(genres) {
-  const container = document.getElementById('genres')
-  container.innerHTML = ''
-  
-  if (!genres) return
-  
-  genres.forEach(genre => {
-    const badge = document.createElement('span')
-    badge.textContent = genre.description
-    badge.className = 'genre-badge'
-    container.appendChild(badge)
-  })
-}
+      const now = new Date();
+      const points = [];
+      for (let i = 24; i >= 0; i--) {
+        const d = new Date(now - i * 3600 * 1000);
+        const hour = d.getHours();
+        const noise = 1 + (Math.random() - 0.5) * 0.06;
+        points.push({
+          x: d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          y: Math.round(basePlayers * curve[hour] * noise)
+        });
+      }
+      return points;
+    }
 
-async function handleSearch() {
-  const appId = document.getElementById('app-id-input').value.trim()
-  if (!appId) return
+    function syntheticDailyPattern(basePlayers) {
+      // Day-of-week relative multipliers (0=Sun … 6=Sat)
+      const dowCurve = [1.10, 0.82, 0.80, 0.84, 0.88, 1.05, 1.15];
+      const now = new Date();
+      const points = [];
+      for (let i = 7; i >= 0; i--) {
+        const d = new Date(now - i * 86400 * 1000);
+        const dow = d.getDay();
+        const noise = 1 + (Math.random() - 0.5) * 0.06;
+        points.push({
+          x: d.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' }),
+          y: Math.round(basePlayers * dowCurve[dow] * noise)
+        });
+      }
+      return points;
+    }
 
-  try {
-    const [game, playerCount, news] = await Promise.all([
-      fetchAppDetails(appId),
-      fetchPlayerCount(appId),
-      fetchNews(appId)
-    ])
-    document.getElementById('game-title').textContent = game.name
-    document.getElementById('game-description').textContent = game.short_description
-    document.getElementById('current-players').textContent = 
-      playerCount.toLocaleString()
-    document.getElementById('price').textContent = 
-      game.is_free ? 'Free' : (game.price_overview?.final_formatted ?? 'N/A')
-    document.getElementById('review-score').textContent =
-      game.recommendations?.total != null
-      ? game.recommendations.total.toLocaleString() + ' recommendations'
-      : 'N/A'
-    document.getElementById('results').style.display = 'block'
-    renderNews(news)
-    renderGenres(game.genres)
-    const banner = document.getElementById('game-header-image')
-    banner.src = game.header_image
-    banner.alt = game.name
-    banner.style.display = 'block'
-  } catch (err) {
-    document.getElementById('error-msg').textContent = err.message
-    document.getElementById('error-msg').style.display = 'block'
-  }
-}
+    // ── Chart rendering
+    function buildChart(labels, values, period) {
+      const canvas = document.getElementById('playerChart');
+      const ctx = canvas.getContext('2d');
 
-  document.getElementById('search-button').addEventListener('click', handleSearch)
+      if (chartInstance) chartInstance.destroy();
+
+      const gradient = ctx.createLinearGradient(0, 0, 0, 220);
+      gradient.addColorStop(0, 'rgba(27, 154, 245, 0.25)');
+      gradient.addColorStop(1, 'rgba(27, 154, 245, 0.01)');
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            data: values,
+            borderColor: '#1b9af5',
+            borderWidth: 2,
+            pointRadius: period === '1y' ? 3 : 2,
+            pointHoverRadius: 5,
+            pointBackgroundColor: '#1b9af5',
+            fill: true,
+            backgroundColor: gradient,
+            tension: 0.35
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#1a1a1e',
+              borderColor: '#2a2a2e',
+              borderWidth: 1,
+              titleColor: '#888',
+              bodyColor: '#fff',
+              padding: 10,
+              callbacks: {
+                label: ctx => ' ' + ctx.parsed.y.toLocaleString() + ' players'
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: '#555',
+                font: { size: 11 },
+                maxTicksLimit: period === '1y' ? 12 : (period === '7d' ? 7 : 8),
+                maxRotation: 0
+              },
+              border: { color: '#2a2a2e' }
+            },
+            y: {
+              position: 'right',
+              grid: { color: 'rgba(255,255,255,0.04)' },
+              ticks: {
+                color: '#555',
+                font: { size: 11 },
+                callback: v => v >= 1000000 ? (v/1000000).toFixed(1)+'M'
+                             : v >= 1000 ? (v/1000).toFixed(1)+'K'
+                             : v
+              },
+              border: { color: '#2a2a2e' }
+            }
+          }
+        }
+      });
+    }
+
+    // ── Load chart for selected period
+    async function loadChart(period) {
+      const noteEl = document.getElementById('graph-note');
+      const loading = document.getElementById('graph-loading');
+      const container = document.getElementById('graph-container');
+
+      loading.style.display = 'flex';
+      container.style.display = 'none';
+      noteEl.textContent = '';
+
+      try {
+        let labels = [], values = [];
+
+        if (period === '24h') {
+          const points = syntheticHourlyPattern(currentPlayerCount);
+          labels = points.map(p => p.x);
+          values = points.map(p => p.y);
+          noteEl.textContent = '⚡ 24H data is estimated from current player count using typical daily usage patterns — Steam does not provide granular historical data.';
+
+        } else if (period === '7d') {
+          const points = syntheticDailyPattern(currentPlayerCount);
+          labels = points.map(p => p.x);
+          values = points.map(p => p.y);
+          noteEl.textContent = '⚡ 7D data is estimated using daily usage patterns — Steam does not expose per-day historical data via its public API.';
+
+        } else {
+          // 1Y — real Steam Charts data
+          if (!yearData) {
+            yearData = await fetchSteamChartsHistory(currentAppId);
+          }
+          // Last 12 months: each entry is [timestamp_ms, avg_players]
+          const slice = yearData.slice(-13);
+          labels = slice.map(([ts]) => new Date(ts).toLocaleDateString([], { month: 'short', year: '2-digit' }));
+          values = slice.map(([, avg]) => Math.round(avg));
+          noteEl.textContent = '📊 Monthly average player counts sourced from Steam Charts.';
+        }
+
+        loading.style.display = 'none';
+        container.style.display = 'block';
+        buildChart(labels, values, period);
+
+      } catch (err) {
+        loading.style.display = 'none';
+        container.style.display = 'block';
+        noteEl.textContent = '⚠ Could not load chart data for this period.';
+        // Fallback: synthetic even for 1Y
+        if (period === '1y') {
+          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+          const now = new Date();
+          const labels12 = [];
+          const values12 = [];
+          for (let i = 11; i >= 0; i--) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            labels12.push(months[d.getMonth()] + ' \'' + String(d.getFullYear()).slice(2));
+            const noise = 1 + (Math.random() - 0.5) * 0.2;
+            values12.push(Math.round(currentPlayerCount * noise));
+          }
+          buildChart(labels12, values12, period);
+          noteEl.textContent = '⚡ Historical data unavailable — showing estimated trend. Steam Charts may block this proxy.';
+        }
+      }
+    }
+
+    // ── Render helpers
+    function renderNews(newsItems) {
+      const container = document.getElementById('news-list');
+      container.innerHTML = '';
+      newsItems.forEach(item => {
+        const date = new Date(item.date * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+        const article = document.createElement('article');
+        article.innerHTML = `<a href="${item.url}" target="_blank">${item.title}</a><p>${item.author} · ${date}</p>`;
+        container.appendChild(article);
+      });
+    }
+
+    function renderGenres(genres) {
+      const container = document.getElementById('genres');
+      container.innerHTML = '';
+      if (!genres) return;
+      genres.forEach(g => {
+        const b = document.createElement('span');
+        b.textContent = g.description;
+        b.className = 'genre-badge';
+        container.appendChild(b);
+      });
+    }
+
+    // ── Period tab switching
+    document.querySelectorAll('.period-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (!currentAppId) return;
+        document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        activePeriod = tab.dataset.period;
+        loadChart(activePeriod);
+      });
+    });
+
+    // ── Main search
+    async function handleSearch() {
+      const appId = document.getElementById('app-id-input').value.trim();
+      if (!appId) return;
+
+      const errEl = document.getElementById('error-msg');
+      errEl.style.display = 'none';
+
+      // Reset cache when searching a new app
+      yearData = null;
+      currentAppId = appId;
+      activePeriod = '24h';
+      document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('[data-period="24h"]').classList.add('active');
+
+      try {
+        const [game, playerCount, news] = await Promise.all([
+          fetchAppDetails(appId),
+          fetchPlayerCount(appId),
+          fetchNews(appId)
+        ]);
+
+        currentPlayerCount = playerCount;
+
+        document.getElementById('game-title').textContent = game.name;
+        document.getElementById('game-description').textContent = game.short_description;
+        document.getElementById('current-players').textContent = playerCount.toLocaleString();
+        document.getElementById('price').textContent = game.is_free ? 'Free' : (game.price_overview?.final_formatted ?? 'N/A');
+        document.getElementById('review-score').textContent =
+          game.recommendations?.total != null
+            ? game.recommendations.total.toLocaleString() + ' recs'
+            : 'N/A';
+
+        const banner = document.getElementById('game-header-image');
+        banner.src = game.header_image;
+        banner.alt = game.name;
+        banner.style.display = 'block';
+
+        renderNews(news);
+        renderGenres(game.genres);
+
+        document.getElementById('results').style.display = 'block';
+
+        // Load initial chart
+        await loadChart('24h');
+
+      } catch (err) {
+        errEl.textContent = err.message;
+        errEl.style.display = 'block';
+      }
+    }
+
+    document.getElementById('search-button').addEventListener('click', handleSearch);
+    document.getElementById('app-id-input').addEventListener('keydown', e => {
+      if (e.key === 'Enter') handleSearch();
+    });
   </script>
 
 </body>
+</html>
