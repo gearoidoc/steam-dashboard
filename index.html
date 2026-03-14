@@ -580,7 +580,7 @@
           }
           // Last 12 months: each entry is [timestamp_ms, avg_players]
           const slice = yearData.slice(-13);
-          labels = slice.map(([ts]) => new Date(ts).toLocaleDateString([], { month: 'short', year: '2-digit' }));
+          labels = slice.map(([ts]) => new Date(ts * 1000).toLocaleDateString([], { month: 'short', year: '2-digit' }));
           values = slice.map(([, avg]) => Math.round(avg));
           noteEl.textContent = '📊 Monthly average player counts sourced from Steam Charts.';
         }
